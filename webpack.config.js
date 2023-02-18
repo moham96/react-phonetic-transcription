@@ -1,15 +1,22 @@
 const path = require("path");
 
 module.exports = {
-  mode: "production",
-  entry: "./src/index.js",
+  entry: "./src/index.tsx",
   output: {
-    path: path.resolve("build"),
-    filename: "index.js",
+    path: path.resolve(__dirname,"build"),
+    filename: "bundle.js",
     libraryTarget: "commonjs2",
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts','.js'],
   },
   module: {
     rules: [
+      {
+        test: /\.(tsx|ts)?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
       { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" },
       {
         test: /\.css$/,

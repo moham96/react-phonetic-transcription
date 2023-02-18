@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { CSSProperties, useEffect, useState } from "react";
 import {
   Button,
   Chip,
@@ -9,19 +9,24 @@ import {
   Card,
   CardContent,
   IconButton,
+  SxProps,
 } from "@mui/material";
 import "./style.css";
 import { common_java, full_data } from "./data_full";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 
 const STORAGE_KEY = "previous_phonetic_input";
-
-const BtnInput = ({ character, onClick }) => (
+export interface BtnInputProps {
+  character: string;
+  onClick: React.MouseEventHandler<HTMLDivElement>;
+  sx: SxProps;
+}
+const BtnInput = ({ character, onClick, sx }: BtnInputProps) => (
   <Chip
     onClick={onClick}
     sx={{
+      ...sx,
       m: 1,
       pt: 0.8,
       pb: 0.8,
@@ -41,15 +46,22 @@ const BtnInput = ({ character, onClick }) => (
   />
 );
 
-const PreviousData = ({ addValue }) => {
-  const [data, setData] = useState([]);
+const PreviousData = ({
+  addValue,
+  sx,
+}: {
+  addValue: (newValue: string) => void;
+  sx: SxProps;
+}) => {
+  const [data, setData] = useState<string[]>([]);
 
   useEffect(() => {
     try {
-      var a = localStorage.getItem(STORAGE_KEY);
-      if (a) {
-        a = JSON.parse(a);
-        setData(a);
+      const storedHistoryStr = localStorage.getItem(STORAGE_KEY);
+
+      if (storedHistoryStr !== null) {
+        const storedHistory: string[] = JSON.parse(storedHistoryStr);
+        setData(storedHistory);
       }
     } catch (error) {
       console.log(error);
@@ -61,6 +73,7 @@ const PreviousData = ({ addValue }) => {
       {data.map((item, idx) => (
         <BtnInput
           key={idx}
+          sx={sx}
           character={item}
           onClick={async () => {
             remember(item);
@@ -72,12 +85,13 @@ const PreviousData = ({ addValue }) => {
   );
 };
 
-function remember(text) {
+function remember(text: string) {
   try {
-    var before = localStorage.getItem(STORAGE_KEY);
+    const beforeStr = localStorage.getItem(STORAGE_KEY);
+    let before: string[] = [];
 
-    if (before) {
-      before = JSON.parse(before);
+    if (beforeStr !== null) {
+      before = JSON.parse(beforeStr);
 
       if (!before.includes(text)) {
         before.unshift(text);
@@ -96,33 +110,52 @@ function remember(text) {
   }
 }
 
-export function TextToPhonetic({ children, ...rest }) {
+export function TextToPhonetic({
+  children,
+  style,
+}: {
+  children: string;
+  style?: CSSProperties;
+}) {
   return (
-    <span className="fonetis" {...rest}>
+    <span className="fonetis" style={style}>
       {children}
     </span>
   );
 }
-
+type InputPhoneticProps = {
+  addValue: (newValue: string) => void;
+  useRemember?: boolean;
+  dataDefault?: string[];
+  height?: string;
+  sx: SxProps;
+  buttonSx: SxProps;
+};
 export function InputPhonetic({
   addValue,
   useRemember = true,
   dataDefault = common_java,
   height = "300px",
   sx = {},
-  ...rest
-}) {
+  buttonSx,
+}: InputPhoneticProps) {
   const sxDefault = {
     maxWidth: "500px",
   };
 
-  const [data, setData] = useState(dataDefault);
+  const [data, setData] = useState<
+    | string[]
+    | {
+        label: string;
+        data: string;
+      }[]
+  >(dataDefault);
   const [more, setMore] = useState(false);
 
   //https://ipa.typeit.org/full/
 
   return (
-    <Box sx={{ ...sx, ...sxDefault }} {...rest}>
+    <Box sx={{ ...sx, ...sxDefault }}>
       <Toolbar sx={{ padding: "0px!important", overflow: "auto" }}>
         <Button
           onClick={() => {
@@ -140,11 +173,13 @@ export function InputPhonetic({
         >
           {more ? "Less" : "More"}
         </Button>
-        {useRemember && <PreviousData addValue={addValue} />}
+        {useRemember && <PreviousData sx={buttonSx} addValue={addValue} />}
       </Toolbar>
 
       <Card
         sx={{
+          ...sx,
+          ...sxDefault,
           overflowY: "scroll",
           height: height,
         }}
@@ -161,6 +196,7 @@ export function InputPhonetic({
               return (
                 <BtnInput
                   key={idx}
+                  sx={buttonSx}
                   character={item}
                   onClick={async () => {
                     if (useRemember) {
@@ -179,6 +215,7 @@ export function InputPhonetic({
                   {item.data.split("").map((itemChild, index) => (
                     <BtnInput
                       key={index}
+                      sx={buttonSx}
                       character={itemChild}
                       onClick={async () => {
                         if (useRemember) {

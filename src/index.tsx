@@ -135,12 +135,12 @@ export function InputPhonetic({
   addValue,
   useRemember = true,
   dataDefault = common_java,
-  height = "300px",
+  height = "200px",
   sx = {},
   buttonSx,
 }: InputPhoneticProps) {
   const sxDefault = {
-    maxWidth: "500px",
+    maxWidth: "800px",
   };
 
   const [data, setData] = useState<

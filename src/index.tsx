@@ -156,7 +156,7 @@ export function InputPhonetic({
 
   return (
     <Box sx={{ ...sx, ...sxDefault }}>
-      <Toolbar sx={{ padding: "0px!important", overflow: "auto" }}>
+      <Toolbar sx={{ padding: "0px !important", overflow: "auto" }}>
         <Button
           onClick={() => {
             if (more) {
